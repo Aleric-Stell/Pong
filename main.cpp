@@ -33,12 +33,16 @@ class Ball{
             if (x + radius >= GetScreenWidth()){
 
                 cpu_score++;
+                speed_x = 7;
+                speed_y = 7;
                 ResetBall();
             }
 
             if (x - radius <= 0){
                 
                 player_score++;
+                speed_x = 7;
+                speed_y = 7;
                 ResetBall();
             }
         }
@@ -143,13 +147,13 @@ int main () {
     player.width = 25;
     player.x = screen_width - player.width - 10;
     player.y = screen_height/2 - player.height/2;
-    player.speed = 6;
+    player.speed = 8;
 
     cpu.height = 120;
     cpu.width = 25;
     cpu.x = 10;
     cpu.y = screen_height/2 - cpu.height/2;
-    cpu.speed = 6;
+    cpu.speed = 8;
 
 
     // Game Loop, does not end until Stop icon is pressed or KEY_ESCAPE is pressed
@@ -164,11 +168,23 @@ int main () {
 
         // Checking for collisions
         if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height})){
+            
             ball.speed_x *= -1;
+
+            if (ball.speed_x < 0)
+            {
+                ball.speed_x *= 1.2;
+            }
         }
 
         if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{cpu.x, cpu.y, cpu.width, cpu.height})){
+            
             ball.speed_x *= -1;
+
+            if (ball.speed_x > 0)
+            {
+                ball.speed_x *= 1.2;
+            }
         }
 
         // Drawing the objects
