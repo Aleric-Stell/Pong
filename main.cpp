@@ -120,10 +120,6 @@ class CpuPaddle: public Paddle {
         }
 };
 
-Ball ball;
-Paddle player;
-CpuPaddle cpu;
-
 int main () {
 
     cout << "Starting the game" << endl;
@@ -137,28 +133,69 @@ int main () {
     SetTargetFPS(60);
 
     // initialize ball object
-    ball.radius = 20;
+    Ball ball;
+    ball.radius = 15;
     ball.x = screen_width/2;
     ball.y = screen_height/2;
     ball.speed_x = 7;
     ball.speed_y = 7;
 
+    Paddle player;
     player.height = 120;
     player.width = 25;
     player.x = screen_width - player.width - 10;
     player.y = screen_height/2 - player.height/2;
-    player.speed = 8;
+    player.speed = 10;
 
+    CpuPaddle cpu;
     cpu.height = 120;
     cpu.width = 25;
     cpu.x = 10;
     cpu.y = screen_height/2 - cpu.height/2;
-    cpu.speed = 8;
+    cpu.speed = 10;
 
+    const char* winnerText = nullptr;
 
     // Game Loop, does not end until Stop icon is pressed or KEY_ESCAPE is pressed
     while(WindowShouldClose() == false) { 
-        
+
+        // Checking for collisions
+        // Player Paddle
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height})){
+            
+            ball.speed_x *= -1;
+
+            // Ball is coming left
+            if (ball.speed_x < 0)
+            {
+                ball.speed_x *= 1.2f;
+                ball.speed_y = ((ball.y - player.y) / (player.height/2)) * ball.speed_x;
+            }
+        }
+        // CPU Paddle
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{cpu.x, cpu.y, cpu.width, cpu.height})){
+            
+            ball.speed_x *= -1;
+
+            // Ball is coming right
+            if (ball.speed_x > 0)
+            {
+                ball.speed_x *= 1.2f;
+                ball.speed_y = ((ball.y - cpu.y) / (cpu.height/2)) * ball.speed_x;
+
+            }
+        }
+
+        if (player_score == 7){
+            winnerText = "You Win!";
+        }
+        if (cpu_score == 7){
+            winnerText = "Better luck next time...";
+        }
+
+
+
+        // Drawing the objects
         BeginDrawing();
 
         // Updating
@@ -166,28 +203,47 @@ int main () {
         player.Update();
         cpu.Update(ball.y);
 
-        // Checking for collisions
-        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height})){
-            
-            ball.speed_x *= -1;
+        // Winner
+        while(winnerText){
+                
+            while( WindowShouldClose() == 0){
+                
+                if (IsKeyDown(KEY_SPACE) == true){
+                    ball.x = GetScreenWidth() / 2;
+                    ball.y = GetScreenHeight() / 2;
+                    ball.speed_x = 7;
+                    ball.speed_y = 7;
+                    cpu_score = 0;
+                    player_score = 0;
+                    winnerText = nullptr;
+                    break;
+                }
+                const char* playAgainText = "Press SPACEBAR to play again or ESC to quit";
+                int playAgainTextWidth = MeasureText(playAgainText, 25);
+                int winnerTextWidth = MeasureText(winnerText, 60);
 
-            if (ball.speed_x < 0)
-            {
-                ball.speed_x *= 1.2;
+                
+                ClearBackground(Dark_Green);
+                DrawRectangle(screen_width/2, 0, screen_width/2, screen_height, Green);
+                DrawCircle(screen_width/2, screen_height/2, 150, Light_Green);
+                DrawLine(screen_width/2, 0, screen_width/2, screen_height, WHITE);
+                DrawText(TextFormat("%i", cpu_score), screen_width/4 - 20, 20, 80, WHITE);
+                DrawText(TextFormat("%i", player_score), 3 * screen_width/4 - 20, 20, 80, WHITE);
+
+                player.Draw();
+                cpu.Draw();
+                
+                DrawText(winnerText, GetScreenWidth() / 2 - (winnerTextWidth / 2), GetScreenHeight() / 2 - 45, 60, Yellow);
+                DrawText(playAgainText, GetScreenWidth() / 2 - (playAgainTextWidth / 2), GetScreenHeight() / 2 + 45, 25, Yellow);
+
+                EndDrawing();
+
+                if(WindowShouldClose() == 1){
+                    return 0;
+                }
             }
         }
 
-        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{cpu.x, cpu.y, cpu.width, cpu.height})){
-            
-            ball.speed_x *= -1;
-
-            if (ball.speed_x > 0)
-            {
-                ball.speed_x *= 1.2;
-            }
-        }
-
-        // Drawing the objects
         ClearBackground(Dark_Green);
         DrawRectangle(screen_width/2, 0, screen_width/2, screen_height, Green);
         DrawCircle(screen_width/2, screen_height/2, 150, Light_Green);
