@@ -152,7 +152,7 @@ int main () {
     cpu.width = 25;
     cpu.x = 10;
     cpu.y = screen_height/2 - cpu.height/2;
-    cpu.speed = 10;
+    cpu.speed = 15;
 
     const char* winnerText = nullptr;
 
